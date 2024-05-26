@@ -1,0 +1,712 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define small 10
+#define medium 50
+#define big 100
+
+struct node {
+    struct node* prev;
+    char day[small];
+    int date;
+    char title[medium];
+    int priority;
+    char description[big];
+    int DueDate;
+    char status[medium];
+    int time;
+    struct node* next;
+};
+
+struct node* head = NULL;
+
+void firstNodes() {
+    char weekday[7][small] = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+
+    for (int i = 0; i < 7; ++i) {
+        struct node* n = (struct node*)malloc(sizeof(struct node));
+
+        strcpy(n->day, weekday[i]);
+        n->prev = NULL;
+        n->date = i + 1;
+        n->title[0] = '\0';
+        n->priority = 0;
+        n->description[0] = '\0';
+        n->DueDate = 0;
+        n->status[0] = '\0';
+        n->time = 0;
+        n->next = NULL;
+
+        if (head == NULL) {
+            head = n;
+        }
+        else {
+            struct node* temp = head;
+            while (temp->next != NULL)
+            {
+                temp = temp->next;
+            }
+            temp->next = n;
+            n->prev = temp;
+        }
+    }
+}
+
+void AddTasks()
+{
+    printf("\nPick a day of the week to add your task to: \n");
+    printf("1.Monday\n");
+    printf("2.Tuesday\n");
+    printf("3.Wednesday\n");
+    printf("4.Thursday\n");
+    printf("5.Friday\n");
+    printf("6.Saturday\n");
+    printf("7.Sunday\n\n");
+
+    int dayNum;
+    printf("Enter (1-7) for the day you chose:");
+    scanf_s("%d", &dayNum);
+    if (dayNum < 1 || dayNum>7) {
+        printf("Chose a number between 1-7, please.");
+        return;
+    }
+
+    struct node* temp = head;
+    while (temp != NULL && temp->date != dayNum)
+    {
+        temp = temp->next;
+    }
+
+    if (temp == NULL)
+    {
+        printf("Day was not found.");
+        return;
+    }
+
+    printf("Adding Task To:  %s\n", temp->day);
+
+    if (temp->title[0] != '\0')
+    {
+        struct node* n = (struct node*)malloc(sizeof(struct node));
+        strcpy(n->day, temp->day);
+        n->prev = NULL;
+        n->date = dayNum;
+        n->title[0] = '\0';
+        n->priority = 0;
+        n->description[0] = '\0';
+        n->DueDate = 0;
+        n->status[0] = '\0';
+        n->time = 0;
+        n->next = NULL;
+
+        char str[big];
+        printf("Enter task title: ");
+        scanf("%49s", str);
+        while (getchar() != '\n');
+        strcpy(n->title, str);
+
+        printf("Enter priority (1 for high, 2 for Medium and 3 for low): ");
+        scanf("%2d", &n->priority);
+
+        printf("Enter task description: ");
+        scanf("%49s", str);
+        while (getchar() != '\n');
+        strcpy(n->description, str);
+
+        printf("Enter due date (1-7): ");
+        scanf("%2d", &n->DueDate);
+
+        printf("Enter status (incomplete, in progress or completed): ");
+        scanf("%49s", str);
+        while (getchar() != '\n');
+        strcpy(n->status, str);
+
+        printf("Enter time to complete in hours: ");
+        scanf("%2d", &n->time);
+
+        if (n->priority <= temp->priority)
+        {
+            n->next = temp->next;
+            temp->next->prev = n;
+            temp->next = n;
+            n->prev = temp;
+        }
+        else
+        {
+            temp->prev->next = n;
+            n->prev = temp->prev;
+            n->next = temp;
+            temp->prev = n;
+        }
+
+    }
+    else
+    {
+        char str[big];
+        printf("Enter task title: ");
+        scanf("%9s", str);
+        while (getchar() != '\n');
+        strcpy(temp->title, str);
+
+        printf("Enter priority (1 for high, 2 for Medium and 3 for low): ");
+        scanf("%2d", &temp->priority);
+
+        printf("Enter task description: ");
+        scanf("%49s", str);
+        while (getchar() != '\n');
+        strcpy(temp->description, str);
+
+        printf("Enter due date (1-7): ");
+        scanf("%2d", &temp->DueDate);
+
+
+        printf("Enter status (incomplete, in progress or completed): ");
+        scanf("%49s", str);
+        while (getchar() != '\n');
+        strcpy(temp->status, str);
+
+        printf("Enter time to complete in hours: ");
+        scanf("%2d", &temp->time);
+    }
+
+    printf("\nYour task was added to %s successfully!\n", temp->day);
+
+    DisplayTasks();
+
+}
+
+int DisplayTasks()
+{
+    if (head == NULL)
+    {
+        return;
+    }
+    struct node* temp = head;
+    printf("\nHere are your tasks for the week:");
+    printf("\n=================================");
+    while (temp != NULL)
+    {
+        if (temp->title[0] != '\0')
+        {
+            printf("\nDay: %s \n", temp->day);
+            printf("Title: %s\n", temp->title);
+            printf("Priority: %d\n", temp->priority);
+            printf("Description: %s\n", temp->description);
+            printf("Due Date: %d\n", temp->DueDate);
+            printf("Status: %s\n", temp->status);
+            printf("Time to complete: %d\n", temp->time);
+
+        }
+
+        temp = temp->next;
+    }
+    printf("=================================\n");
+    return 0;
+}
+
+void EditTasks()
+{
+    int dayNum;
+    printf("\nWhich day do you want to edit? (Pick 1-7): ");
+    scanf("%d", &dayNum);
+
+    struct node* temp = head;
+    struct node* prev = head;
+    while (temp != NULL && temp->date != dayNum)
+    {
+        prev = temp;
+        temp = temp->next;
+    }
+    if (temp == NULL)
+    {
+        printf("\nTask not found for the specified day. Try again!\n");
+        return;
+    }
+
+    printf("\nEditing task on %s:\n", temp->day);
+
+
+    if (temp->title[0] != '\0')
+    {
+        struct node* n = (struct node*)malloc(sizeof(struct node));
+        strcpy(n->day, temp->day);
+        n->prev = NULL;
+        n->date = dayNum;
+        n->title[0] = '\0';
+        n->priority = 0;
+        n->description[0] = '\0';
+        n->DueDate = 0;
+        n->status[0] = '\0';
+        n->time = 0;
+        n->next = NULL;
+
+        char str[big];
+        printf("Enter task title: ");
+        scanf("%9s", str);
+        while (getchar() != '\n');
+        strcpy(n->title, str);
+
+        printf("Enter priority (1 for high, 2 for Medium and 3 for low): ");
+        scanf("%2d", &n->priority);
+
+        printf("Enter task description: ");
+        scanf("%49s", str);
+        while (getchar() != '\n');
+        strcpy(n->description, str);
+
+        printf("Enter due date (1-7): ");
+        scanf("%2d", &n->DueDate);
+
+        printf("Enter status (incomplete, in progress or completed): ");
+        scanf("%49s", str);
+        while (getchar() != '\n');
+        strcpy(n->status, str);
+
+        printf("Enter time to complete in hours: ");
+        scanf("%2d", &n->time);
+
+        printf("\nYour task on %s was edited successfully!\n", temp->day);
+
+        prev->next = n;
+        n->prev = prev;
+        n->next = temp->next;
+        temp->next->prev = n;
+        free(temp);
+    }
+    else
+    {
+        printf("\nThere is no task here! Try again!");
+        return;
+    }
+    DisplayTasks();
+}
+
+void DeleteTasks()
+{
+    int dayNum;
+    printf("\nWhich day do you want to Delete? (Pick 1-7): ");
+    scanf("%d", &dayNum);
+
+    struct node* temp = head;
+    struct node* prev = head;
+    while (temp != NULL && temp->date != dayNum)
+    {
+        prev = temp;
+        temp = temp->next;
+    }
+
+    if (temp == NULL) {
+        printf("\nTask not found!\n");
+        return;
+    }
+
+    if (temp == head) {
+        head = temp->next;
+        if (head != NULL) {
+            head->prev = NULL;
+        }
+    }
+    else {
+        prev->next = temp->next;
+        if (temp->next != NULL) {
+            temp->next->prev = prev;
+        }
+    }
+    printf("\nYour task on %s was successfully deleted!", temp->day);
+    free(temp);
+
+    DisplayTasks();
+
+}
+
+int SortbyPriority()
+{
+    int choice = 1;
+    int input;
+    while (choice != -1) {
+        printf("\nChoose the priority you want to see: \n1 for High Priority\n2 for Medium Priority\n3 for Low Priority: \n ");
+
+
+        if (scanf("%d", &choice) != 1) {
+            printf("Invalid input. Exiting.\n");
+            break;
+        }
+        struct node* temp = head;
+        switch (choice) {
+        case 1:
+            if (head == NULL)
+            {
+                return;
+            }
+
+            printf("\nHere are your tasks with high priority:");
+            printf("\n=================================");
+            while (temp != NULL)
+            {
+                if (temp->priority == 1)
+                {
+                    printf("\nDay: %s \n", temp->day);
+                    printf("Title: %s\n", temp->title);
+                    printf("Priority: %d\n", temp->priority);
+                    printf("Description: %s\n", temp->description);
+                    printf("Due Date: %d\n", temp->DueDate);
+                    printf("Status: %s\n", temp->status);
+                    printf("Time to complete: %d\n", temp->time);
+
+                }
+
+                temp = temp->next;
+            }
+            printf("=================================\n");
+            return;
+        case 2:
+            if (head == NULL)
+            {
+                return;
+            }
+
+            printf("\nHere are your tasks for Medium priority:");
+            printf("\n=================================");
+            while (temp != NULL)
+            {
+                if (temp->priority == 2)
+                {
+                    printf("\nDay: %s \n", temp->day);
+                    printf("Title: %s\n", temp->title);
+                    printf("Priority: %d\n", temp->priority);
+                    printf("Description: %s\n", temp->description);
+                    printf("Due Date: %d\n", temp->DueDate);
+                    printf("Status: %s\n", temp->status);
+                    printf("Time to complete: %d\n", temp->time);
+
+                }
+
+                temp = temp->next;
+            }
+            printf("=================================\n");
+
+            return;
+        case 3:
+            if (head == NULL)
+            {
+                return;
+            }
+
+            printf("\nHere are your tasks for Low priority:");
+            printf("\n=================================");
+            while (temp != NULL)
+            {
+                if (temp->priority == 3)
+                {
+                    printf("\nDay: %s \n", temp->day);
+                    printf("Title: %s\n", temp->title);
+                    printf("Priority: %d\n", temp->priority);
+                    printf("Description: %s\n", temp->description);
+                    printf("Due Date: %d\n", temp->DueDate);
+                    printf("Status: %s\n", temp->status);
+                    printf("Time to complete: %d\n", temp->time);
+
+                }
+
+                temp = temp->next;
+            }
+            printf("=================================\n");
+            return;
+
+        default:
+            printf("Wrong choice: Re-enter number: ");
+            if (scanf("%d", &input) != 1) {
+                printf("Invalid input. Exiting.\n");
+                break;
+            }
+            choice = input;
+            break;
+        }
+    }
+}
+
+void CompletedTasks()
+{
+    int choice = 1;
+    int input;
+    while (choice != -1) {
+        printf("\nChoose:\n1 for Completed\n2 for In Progress\n3 for Incomplete: \n ");
+
+
+        if (scanf("%d", &choice) != 1) {
+            printf("Invalid input. Exiting.\n");
+            break;
+        }
+        struct node* temp = head;
+        switch (choice) {
+        case 1:
+            if (head == NULL)
+            {
+                return;
+            }
+
+            printf("\nHere are your completed tasks:");
+            printf("\n=================================");
+            while (temp != NULL)
+            {
+                if (strcmp(temp->status, "completed") == 0)
+                {
+                    printf("\nDay: %s \n", temp->day);
+                    printf("Title: %s\n", temp->title);
+                    printf("Priority: %d\n", temp->priority);
+                    printf("Description: %s\n", temp->description);
+                    printf("Due Date: %d\n", temp->DueDate);
+                    printf("Status: %s\n", temp->status);
+                    printf("Time to complete: %d\n", temp->time);
+
+                }
+
+                temp = temp->next;
+            }
+            printf("=================================\n");
+            return;
+        case 2:
+            if (head == NULL)
+            {
+                return;
+            }
+
+            printf("\nHere are your in Progress tasks:");
+            printf("\n=================================");
+            while (temp != NULL)
+            {
+                if (strcmp(temp->status, "in progress") == 0)
+                {
+                    printf("\nDay: %s \n", temp->day);
+                    printf("Title: %s\n", temp->title);
+                    printf("Priority: %d\n", temp->priority);
+                    printf("Description: %s\n", temp->description);
+                    printf("Due Date: %d\n", temp->DueDate);
+                    printf("Status: %s\n", temp->status);
+                    printf("Time to complete: %d\n", temp->time);
+
+                }
+
+                temp = temp->next;
+            }
+            printf("=================================\n");
+
+            return;
+        case 3:
+            if (head == NULL)
+            {
+                return;
+            }
+
+            printf("\nHere are your incomplete tasks:");
+            printf("\n=================================");
+            while (temp != NULL)
+            {
+                if (strcmp(temp->status, "incomplete") == 0)
+                {
+                    printf("\nDay: %s \n", temp->day);
+                    printf("Title: %s\n", temp->title);
+                    printf("Priority: %d\n", temp->priority);
+                    printf("Description: %s\n", temp->description);
+                    printf("Due Date: %d\n", temp->DueDate);
+                    printf("Status: %s\n", temp->status);
+                    printf("Time to complete: %d\n", temp->time);
+
+                }
+
+                temp = temp->next;
+            }
+            printf("=================================\n");
+            return;
+
+        default:
+            printf("Wrong choice: Re-enter number: ");
+            if (scanf("%d", &input) != 1) {
+                printf("Invalid input. Exiting.\n");
+                break;
+            }
+            choice = input;
+            break;
+        }
+    }
+}
+
+int SearchTasks()
+{
+    int choice = 1;
+    char title[medium];
+
+    printf("\nEnter the title of the task you want to search: ");
+    scanf("%49s", title);
+    while (getchar() != '\n');
+    int found = 0;
+
+    struct node* temp = head;
+
+    printf("\nHere is the task you searched for:");
+    printf("\n=================================");
+    while (temp != NULL)
+    {
+        if (strcmp(temp->title, title) == 0)
+        {
+            printf("\nDay: %s \n", temp->day);
+            printf("Title: %s\n", temp->title);
+            printf("Priority: %d\n", temp->priority);
+            printf("Description: %s\n", temp->description);
+            printf("Due Date: %d\n", temp->DueDate);
+            printf("Status: %s\n", temp->status);
+            printf("Time to complete: %d\n", temp->time);
+            found = 1;
+
+        }
+
+        temp = temp->next;
+    }
+
+    if (found == 0) {
+        printf("\nNo task found!", title);
+        return;
+    }
+
+    printf("\n=================================");
+    return;
+}
+
+void Save() {
+
+    FILE* file = fopen("itec213project.txt", "w");
+
+    if (file == NULL) {
+        perror("Error opening the file!");
+        return;
+    }
+
+
+    struct node* temp = head;
+
+    while (temp != NULL) {
+        if (temp->title[0] != '\0')
+        {
+            fprintf(file, "%s %d %s %d %s %d %s %d\n", temp->day, temp->date, temp->title, temp->priority, temp->description, temp->DueDate, temp->status, temp->time);
+        }
+        temp = temp->next;
+    }
+    fclose(file);
+    printf("\nTasks saved to 'itec213project.txt' successfully.\n");
+}
+
+void LoadTasks() {
+
+    FILE* file = fopen("itec213project.txt", "r");
+
+    if (file == NULL) {
+        perror("Error opening file!");
+        return;
+    }
+
+    while (head != NULL) {
+        struct node* temp = head;
+        head = head->next;
+        free(temp);
+    }
+
+    while (1) {
+        struct node* n = (struct node*)malloc(sizeof(struct node));
+
+        int result = fscanf(file, "%s %d %s %d %s %d %s %d\n", n->day, &n->date, n->title, &n->priority, n->description, &n->DueDate, n->status, &n->time);
+
+        if (result == EOF) {
+            break;
+        }
+
+        n->prev = NULL;
+        n->next = NULL;
+
+        if (head == NULL) {
+            head = n;
+        }
+        else {
+            struct node* temp = head;
+            while (temp->next != NULL) {
+                temp = temp->next;
+            }
+            temp->next = n;
+            n->prev = temp;
+        }
+    }
+
+    fclose(file);
+    printf("\nTasks loaded from 'itec213project.txt' successfully.\n");
+}
+
+
+
+
+int main() {
+    printf("WELCOME TO BAMLAK's TO-DO LIST\n");
+    printf("==============================\n");
+
+    int restore;
+    printf("Do you want to restore your previous tasks? (if available):\n Enter 1 for Yes\n Enter 0 for No. ");
+    scanf("%d", &restore);
+
+    if (restore == 1)
+    {
+        LoadTasks();
+    }
+
+    firstNodes();
+
+    AddTasks();
+
+    int choice = 1;
+    int input;
+
+    while (choice != -1) {
+        printf("\nWould you like to: \n");
+        printf("1.Add another task\n2.Edit an added task\n3.Delete a task\n4.Sort by Priority\n5.Sort by Status\n6.Search tasks");
+        printf("\nEnter Your Choice (1-6) or Press -1 To End: ");
+
+        if (scanf("%d", &choice) != 1) {
+            printf("Invalid input. Exiting.\n");
+            break;
+        }
+
+        switch (choice) {
+        case 1:
+            AddTasks();
+            break;
+        case 2:
+            EditTasks();
+            break;
+        case 3:
+            DeleteTasks();
+            break;
+        case 4:
+            SortbyPriority();
+            break;
+        case 5:
+            CompletedTasks();
+            break;
+        case 6:
+            SearchTasks();
+            break;
+        case -1:
+            printf("Do you want to save your tasks before exiting?:\n Press 1 for Yes\n Press 0 for NO:  ");
+            int save;
+            if (scanf("%d", &save) == 1) {
+                Save();
+            }
+            return;
+        default:
+            printf("ERROR! Re-enter number: ");
+            if (scanf("%d", &input) != choice) {
+                printf("Invalid again. Rerun!\n");
+                return;
+            }
+            break;
+        }
+    }
+}
